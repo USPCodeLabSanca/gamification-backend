@@ -12,7 +12,7 @@ app.use(cookieParser());
 
 app.get('/', (req,res) => {res.send('Hello!')})
 
-import LoginRouter from "./src/routes/login"
-app.use('/users', LoginRouter)
+import AuthRouter from "./src/routes/auth"
+app.use('/users', AuthRouter)
 
 export default app;
