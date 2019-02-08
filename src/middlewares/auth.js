@@ -3,7 +3,6 @@ import authConfig from '../auth.json'
 
 export default (req, res, next) => {
     let authHeader = req.headers.authorization;
-
     // checking if token exists
     if (!authHeader)
         return res.status(401).send({error: 'No token provided'});
@@ -11,7 +10,7 @@ export default (req, res, next) => {
     // checking if token is well formated
     // jwt format: bearer <hash>
     let parts = authHeader.split(' ');
-    if(parts.length === 2)
+    if(parts.length != 2)
         return res.status(401).send({error: 'Token error'});
 
     // splits token in two
@@ -22,11 +21,12 @@ export default (req, res, next) => {
         return res.status(401).send({error: 'Bad token format'});
 
     // checks if token is valid
-    jwt.verify(token, authConfig.secret, (err, decoded) => {
+    jwt.verify(token, authConfig.secret_key, (err, decoded) => {
         // if an error occurs
-        if(err) return res.status(401).send({ error: 'Invalid Token' });
+        if(err) return res.status(401).send({ error: 'Could not validate token' });
         // else gives the decoded userID
         req.userId = decoded.id
+        req.admin = decoded.admin
         return next();
     });
 };

@@ -10,9 +10,12 @@ app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
 app.use(cookieParser());
 
-app.get('/', (req,res) => {res.send('Hello!')})
+app.get('/', (req,res) => {res.send('')})
 
 import AuthRouter from "./src/routes/auth"
 app.use('/users', AuthRouter)
+
+import QuestRouter from "./src/routes/quest"
+app.use('/quests', QuestRouter)
 
 export default app;

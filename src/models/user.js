@@ -1,6 +1,5 @@
 import mongoose from '../database/index'
 import bcrypt from 'bcryptjs'
-import { throws } from 'assert';
 
 const UserSchema = new mongoose.Schema({
     name: {
@@ -19,9 +18,31 @@ const UserSchema = new mongoose.Schema({
         required: true,
         select: false
     },
+    points: {
+        type: Number,
+        required: false,
+        select: true,
+        default: 0
+    },
+    packs: {
+        type: Number,
+        required: false,
+        select: true,
+        default: 0
+    },
+    questsCompleted: {
+        type: Array,
+        required: false,
+        select: true
+    },
     createdAt: {
         type: Date,
         default: Date.now
+    },
+    admin: {
+        type: Boolean,
+        default: false,
+        select: false
     }
 });
 
