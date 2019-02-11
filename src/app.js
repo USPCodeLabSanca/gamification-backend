@@ -12,10 +12,10 @@ app.use(cookieParser());
 
 app.get('/', (req,res) => {res.send('')})
 
-import AuthRouter from "./src/routes/auth"
+import AuthRouter from "./routes/auth"
 app.use('/users', AuthRouter)
 
-import QuestRouter from "./src/routes/quest"
+import QuestRouter from "./routes/quest"
 app.use('/quests', QuestRouter)
 
 export default app;
