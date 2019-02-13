@@ -33,7 +33,7 @@ async function registerUser(req, res) {
         let user = await User.create(req.body);
 
         user.password = undefined;
-        user.admin = undefined;
+        user.admin = false;
 
         return res.send({user, token: generateToken({id: user.id}) })
     } catch(err) {
