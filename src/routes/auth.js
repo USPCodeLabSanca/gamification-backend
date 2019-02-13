@@ -33,7 +33,7 @@ async function registerUser(req, res) {
         let user = await User.create(req.body);
 
         user.password = undefined;
-        user.admin = false;
+        user.admin = undefined;
 
         return res.send({user, token: generateToken({id: user.id}) })
     } catch(err) {
@@ -48,9 +48,11 @@ async function authUser(req, res) {
     let { email, password } = req.body;
 
     let user = await User.findOne({ email }).select('+password').select('+admin')
-    let isAdmin = user.admin
+
     if(!user) 
         return res.status(400).send({ error: 'Email not found.' })
+
+    let isAdmin = user.admin
 
     if(!await bcrypt.compare(password, user.password))
         return res.status(400).send({ error: 'Invalid Password.' })
