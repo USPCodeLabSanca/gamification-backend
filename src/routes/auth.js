@@ -3,8 +3,9 @@ import User from '../models/user'
 import bcrypt from 'bcryptjs'
 import jwt from 'jsonwebtoken'
 import authConfig from '../auth.json'
+import authMiddleware from '../middlewares/auth'
 
-const router = express.Router();
+let router = express.Router();
 
 //routes
 router.post('/register', registerUser)
@@ -12,6 +13,8 @@ router.post('/auth', authUser)
 router.post('/open', openPack)
 router.post('/forgot', forgotPassword)
 
+// requires authentication
+router.post('/open', authMiddleware, openPack)
 
 // generates a json web token based on user id
 function generateToken(params = {}){

@@ -30,10 +30,10 @@ async function listQuests(req, res) {
 
 async function createQuest(req, res) {
     // checking if user is admin
-    let admin = req.admin
-    if(!admin){
-        return res.status(403).send({ error: 'User is not admin'})
-    }
+    // let admin = req.admin
+    // if(!admin){
+    //     return res.status(403).send({ error: 'User is not admin'})
+    // }
 
     let questId = req.body.questId
     try {
