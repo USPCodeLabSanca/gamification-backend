@@ -13,6 +13,11 @@ const UserSchema = new mongoose.Schema({
         required: true,
         lowercase: true
     },
+    nusp: {
+        type: String,
+        unique: true,
+        required: true
+    },
     password: {
         type: String,
         required: true,
@@ -43,6 +48,10 @@ const UserSchema = new mongoose.Schema({
         type: Boolean,
         default: false,
         select: false
+    },
+    cards: {
+        type: Array,
+        default: [ [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0], [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0], [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0] ]
     }
 });
 
