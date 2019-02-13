@@ -13,7 +13,7 @@ const QuestSchema = new mongoose.Schema({
         type: String,
         require: true,
     },
-    missionId: {
+    questId: {
         type: Number,
         unique: true,
         required: true
@@ -33,7 +33,16 @@ const QuestSchema = new mongoose.Schema({
         required: true,
         select: true
     },
-
+    startDate: {
+        type: Date,
+        required: true,
+        select: true
+    },
+    endDate: {
+        type: Date,
+        select: true,
+        default: new Date(2019, 2, 22, 23, 59, 59, 60)
+    }
 });
 
 const Quest = mongoose.model('Quest', QuestSchema)

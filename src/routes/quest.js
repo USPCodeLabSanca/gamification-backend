@@ -15,6 +15,7 @@ router.delete('/:quest_id', dropQuest) //deletes the quest with quest_id (requir
 
 // special routes
 router.post('/validate', validateQuest) // checks if quest password is valid
+router.get('/active', activeQuests) // gets all active quests
 
 
 async function listQuests(req, res) {
@@ -26,6 +27,7 @@ async function listQuests(req, res) {
     return res.send(quests)
 }
 
+
 async function createQuest(req, res) {
     // checking if user is admin
     let admin = req.admin
@@ -33,15 +35,16 @@ async function createQuest(req, res) {
         return res.status(403).send({ error: 'User is not admin'})
     }
 
-    let { questId } = req.body
+    let questId = req.body.questId
     try {
         //if questId taken
-        if(await Quest.findOne({ questId })) {
+        let quest = await Quest.findOne({ questId: questId })
+        if(quest) {
             return res.status(409).send({ error: 'Quest already exists (duplicate questId)'})
         }
 
         //creates a new quest and stores it in database
-        let quest = await Quest.create(req.body);
+        quest = await Quest.create(req.body);
 
         return res.status(201).send(quest)
     } catch(err) {
@@ -49,6 +52,7 @@ async function createQuest(req, res) {
         return res.status(400).send({error: 'Registration Failed'})
     }
 }
+
 
 async function dropQuests(req, res) {
     let admin=req.admin
@@ -58,6 +62,7 @@ async function dropQuests(req, res) {
     await Quest.collection.drop();
     return res.send(quests)
 }
+
 
 async function dropQuest(req, res) {
     let admin=req.admin
@@ -74,12 +79,13 @@ async function dropQuest(req, res) {
     }
 }
 
+
 async function validateQuest(req, res) {
-    missionId = req.body.missionId
-    code = req.body.code;
+    let questId = req.body.questId
+    let code = req.body.code;
 
     // valida a missão
-    let quest = await Quest.findOne({ missionId }).select('+password')
+    let quest = await Quest.findOne({ questId }).select('+code')
 
     if(!quest) {
         return res.status(400).send({ error: 'Quest not found.' })
@@ -89,9 +95,15 @@ async function validateQuest(req, res) {
         return res.status(400).send({ error: 'Invalid Code.' })
     else {
         // correct code!
-        let user = await User.findOne(req.UserId);
+        let user = await User.findById(req.userId);
+
+        // checks if user already completed this quest
+        if (user.questsCompleted.includes(questId)){
+            return res.status(400).send({ error: 'Quest already completed.' })
+        }
+
         // set quest as completed 
-        user.questsCompleted.push();
+        user.questsCompleted.push(quest.questId);
         //give rewards to player
         if( quest.rewardPoints > 0 ) {
             user.points += quest.rewardPoints;
@@ -99,11 +111,22 @@ async function validateQuest(req, res) {
         if( quest.rewardPacks > 0){
             user.packs += quest.rewardPacks;
         }
+
         //saves changes
         await user.save()
         // returns user data with code 200 to client
         return res.send(user)
     }
 }
+
+
+async function activeQuests(req, res) {
+    let current_date = Date.now();
+
+    let quests = await Quest.find({startDate: { $lte: current_date }, endDate: { $gte: current_date}})
+
+    return res.send(quests)
+}
+
 
 export default router

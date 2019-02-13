@@ -6,6 +6,13 @@ import authConfig from '../auth.json'
 
 const router = express.Router();
 
+//routes
+router.post('/register', registerUser)
+router.post('/auth', authUser)
+router.post('/open', openPack)
+router.post('/forgot', forgotPassword)
+
+
 // generates a json web token based on user id
 function generateToken(params = {}){
     return jwt.sign(params, authConfig.secret_key, {
@@ -13,8 +20,9 @@ function generateToken(params = {}){
     });
 }
 
+
 // user registration
-router.post('/register', async (req, res) => {
+async function registerUser(req, res) {
     let { email } = req.body
     try {
         //if email taken
@@ -32,13 +40,15 @@ router.post('/register', async (req, res) => {
         console.log(err)
         return res.status(400).send({error: 'Registration Failed'})
     }
-});
+}
 
-router.post('/auth', async (req, res) => {
+
+// user authentication
+async function authUser(req, res) {
     let { email, password } = req.body;
 
     let user = await User.findOne({ email }).select('+password').select('+admin')
-
+    let isAdmin = user.admin
     if(!user) 
         return res.status(400).send({ error: 'Email not found.' })
 
@@ -47,7 +57,18 @@ router.post('/auth', async (req, res) => {
 
     user.password = undefined;
     user.admin = undefined;
-    res.send({ user, token: generateToken({ id: user.id, admin:user.admin }) })
-})
+    res.send({ user, token: generateToken({ id: user.id, admin:isAdmin }) })
+}
+
+
+// open a card pack for the user
+async function openPack(req, res) {
+    
+}
+
+// resets password
+async function forgotPassword(req, res) {
+
+}
 
 export default router
