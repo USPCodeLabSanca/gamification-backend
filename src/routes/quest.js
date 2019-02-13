@@ -19,10 +19,10 @@ router.get('/active', activeQuests) // gets all active quests
 
 
 async function listQuests(req, res) {
-    let admin=req.admin
-    if(!admin){
-        return res.status(403).send({ error: 'User is not admin'})
-    }
+    // let admin=req.admin
+    // if(!admin){
+    //     return res.status(403).send({ error: 'User is not admin'})
+    // }
     let quests = await Quest.find({})
     return res.send(quests)
 }
@@ -55,20 +55,20 @@ async function createQuest(req, res) {
 
 
 async function dropQuests(req, res) {
-    let admin=req.admin
-    if(!admin){
-        return res.status(403).send({ error: 'User is not admin'})
-    }
+    // let admin=req.admin
+    // if(!admin){
+    //     return res.status(403).send({ error: 'User is not admin'})
+    // }
     await Quest.collection.drop();
     return res.send(quests)
 }
 
 
 async function dropQuest(req, res) {
-    let admin=req.admin
-    if(!admin){
-        return res.status(403).send({ error: 'User is not admin'})
-    }
+    // let admin=req.admin
+    // if(!admin){
+    //     return res.status(403).send({ error: 'User is not admin'})
+    // }
 
     try {
         let result = await Quest.deleteOne({questId: req.params.quest_id})
