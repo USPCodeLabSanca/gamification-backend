@@ -14,10 +14,10 @@ app.use(cors())
 
 app.get('/api/', (req,res) => {res.send('Ok')})
 
-import AuthRouter from "./routes/auth"
+import AuthRouter from "./routes/users"
 app.use('/api/users', AuthRouter)
 
-import QuestRouter from "./routes/quest"
+import QuestRouter from "./routes/quests"
 app.use('/api/quests', QuestRouter)
 
 export default app;

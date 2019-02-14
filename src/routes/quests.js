@@ -97,6 +97,10 @@ async function validateQuest(req, res) {
         // correct code!
         let user = await User.findById(req.userId);
 
+        if(!user){
+            return res.status(400).send({ error: 'User not found' })
+        }
+
         // checks if user already completed this quest
         if (user.questsCompleted.includes(questId)){
             return res.status(400).send({ error: 'Quest already completed.' })
