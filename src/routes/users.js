@@ -5,25 +5,25 @@ import jwt from 'jsonwebtoken'
 import authConfig from '../auth.json'
 import authMiddleware from '../middlewares/auth'
 import adminMiddleware from '../middlewares/admin'
+import mailer from '../modules/mailer'
+import crypto from 'crypto'
 
 let router = express.Router();
 
-
-router.use('/open', [authMiddleware, adminMiddleware])
-
-//basic crud stuff
+//basic crud stuff - requires admin authentication
 router.delete('/', [authMiddleware, adminMiddleware, deleteAllUsers])
 router.delete('/:nusp', [authMiddleware, adminMiddleware, deleteUser])
 router.patch('/:nusp', [authMiddleware, adminMiddleware, patchUser])
 
-//routes
+//routes that do not require authentication
 router.post('/register', registerUser)
 router.post('/auth', authUser)
-router.post('/open', openPack)
 router.post('/forgot', forgotPassword)
+router.post('/reset', resetPassword)
 
-// requires authentication
-router.post('/open', openPack)
+//routes that requires authentication
+router.post('/open', [authMiddleware, openPack])
+
 
 // generates a json web token based on user id
 function generateToken(params = {}){
@@ -58,7 +58,6 @@ async function registerUser(req, res) {
         return res.status(400).send({error: 'Registration Failed'})
     }
 }
-
 
 // user authentication
 async function authUser(req, res) {
@@ -133,8 +132,74 @@ async function openPack(req, res) {
 
 // resets password
 async function forgotPassword(req, res) {
+    let { email } = req.body;
+
+    try {
+
+        let user = await User.findOne({ email })
+
+        if(!user)
+            return res.status(400).send({error: 'Email not found.'})
+
+        let token = crypto.randomBytes(3).toString('hex');
+
+        const now = new Date();
+        now.setHours(now.getMinutes() + 15)
+
+        user.passwordResetToken = token
+        user.passwordResetExpires = now
+
+        user.save();
+
+        mailer.sendMail({
+            to: email,
+            from: "Porcarata <bixoquest@gmail.com>",
+            subject: "BixoQuest: Esqueci minha senha",
+            text: "Olá " + user.name + ", Seu token é " + token
+        }, (err, info) => {
+            if(err){
+                return res.status(400).send('Could not set email')
+            } else {
+                return res.send()
+            }
+         });
+
+    } catch (err) {
+        return res.status(400).send({error: 'Error on forgot password.'})
+    }
 
 }
+
+async function resetPassword(req, res) {
+    let { email, token, password } = req.body;
+
+    try {
+        let user = await User.findOne({ email }).select('+passwordResetToken passwordResetExpires')
+
+        if(!user)
+            return res.status(400).send({ error: 'User not found.' })
+
+        if(token !== user.passwordResetToken)
+            return res.status(400).send({ error: 'Invalid Token.' })
+
+        let now = new Date();
+        if(now > user.passwordResetExpires)
+            return res.status(400).send({ error: 'Token expired.'})
+
+        user.password = password
+
+        await user.save();
+
+        res.send();
+
+    } catch (err) {
+        res.status(400).send({ error: 'Cannot reset password, try again' });
+    }
+}
+
+
+// ==== CRUD ====
+
 
 async function deleteUser(req, res) {
     try {

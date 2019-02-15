@@ -1,52 +1,44 @@
 import express from 'express';
 import Quest from '../models/quest';
 import User from '../models/user';
-import Autentication from '../middlewares/auth'
+import AuthMiddleware from '../middlewares/auth'
+import AdminAuthMiddleware from '../middlewares/admin'
 
 let router = express.Router()
 
-router.use(Autentication)
-
 // basic crud stuff
-router.get('/', listQuests); //get all quests (requires admin)
-router.post('/', createQuest) //creates a new quest (requires admin)
-router.delete('/', dropQuests) //deletes all quests (requires admin)
-router.delete('/:quest_id', dropQuest) //deletes the quest with quest_id (requires admin)
+router.get('/', [AuthMiddleware, AdminAuthMiddleware, listQuests]) //get all quests (requires admin)
+router.post('/', [AuthMiddleware, AdminAuthMiddleware, createQuest]) //creates a new quest (requires admin)
+router.delete('/', [AuthMiddleware, AdminAuthMiddleware, dropQuests]) //deletes all quests (requires admin)
+router.delete('/:quest_id', [AuthMiddleware, AdminAuthMiddleware, dropQuest]) //deletes the quest with quest_id (requires admin)
 
 // special routes
-router.post('/validate', validateQuest) // checks if quest password is valid
-router.get('/active', activeQuests) // gets all active quests
+router.post('/validate', [AuthMiddleware, validateQuest]) // checks if quest password is valid
+router.get('/active', [AuthMiddleware, activeQuests]) // gets all active quests
+
+
+// ==== CRUD ==== //
 
 
 async function listQuests(req, res) {
-    // let admin=req.admin
-    // if(!admin){
-    //     return res.status(403).send({ error: 'User is not admin'})
-    // }
     let quests = await Quest.find({})
     return res.send(quests)
 }
 
 
 async function createQuest(req, res) {
-    // checking if user is admin
-    // let admin = req.admin
-    // if(!admin){
-    //     return res.status(403).send({ error: 'User is not admin'})
-    // }
 
     let questId = req.body.questId
     try {
         //if questId taken
         let quest = await Quest.findOne({ questId: questId })
-        if(quest) {
+        if(quest)
             return res.status(409).send({ error: 'Quest already exists (duplicate questId)'})
-        }
 
         //creates a new quest and stores it in database
         quest = await Quest.create(req.body);
-
         return res.status(201).send(quest)
+
     } catch(err) {
         console.log(err)
         return res.status(400).send({error: 'Registration Failed'})
@@ -55,29 +47,28 @@ async function createQuest(req, res) {
 
 
 async function dropQuests(req, res) {
-    // let admin=req.admin
-    // if(!admin){
-    //     return res.status(403).send({ error: 'User is not admin'})
-    // }
-    await Quest.collection.drop();
-    return res.send(quests)
+    try{
+        await Quest.collection.drop();
+        return res.send(quests)
+    } catch(err) {
+        console.log(err)
+        return res.status(404).send({error: 'Error deleting quest collection'})
+    }
 }
 
 
 async function dropQuest(req, res) {
-    // let admin=req.admin
-    // if(!admin){
-    //     return res.status(403).send({ error: 'User is not admin'})
-    // }
-
     try {
-        let result = await Quest.deleteOne({questId: req.params.quest_id})
+        await Quest.deleteOne({questId: req.params.quest_id})
         return res.send({result: 'Ok'})
     } catch (err) {
         console.log(err)
         return res.status(404).send({error: 'Error deleting quest'})
     }
 }
+
+
+// ==== OTHER STUFF ===
 
 
 async function validateQuest(req, res) {
@@ -122,7 +113,6 @@ async function validateQuest(req, res) {
         return res.send(user)
     }
 }
-
 
 async function activeQuests(req, res) {
     let current_date = Date.now();
