@@ -107,23 +107,22 @@ async function openPack(req, res) {
 
     if(user.packs <= 0)
         return res.status(400).send({ error: 'Not enough packs.' })
+
     else { 
-        let cards_indexes = getCards(user)
-        let i = cards_indexes[0]
-        let j = cards_indexes[1]
-        if( i < 0 || j < 0){
-            return res.status(400).send({ error: 'Albums completed.' })
+        let my_cards = []
+        for(let count = 0; count < 3; count++){
+            let [i, j] = getCards(user)
+            if(i < 0 || j < 0)
+                break
+            user.cards[i][j] += 1
+            my_cards.push( [i, j] )         
         }
-        user.cards[i][j] += 1
         user.packs -= 1
         user.markModified('cards')
         await user.save();
 
         return res.send({
-            indexes: {
-                i: i,
-                j: j
-            },
+            indexes: my_cards,
             cards: user.cards,
             packs: user.packs
         })
