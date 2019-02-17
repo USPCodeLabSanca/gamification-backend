@@ -14,6 +14,7 @@ router.delete('/:quest_id', [AuthMiddleware, AdminAuthMiddleware, dropQuest]) //
 
 // special routes
 router.post('/validate', [AuthMiddleware, validateQuest]) // checks if quest password is valid
+router.get('/past', [AuthMiddleware, pastQuests]) // gets all inactive quests
 router.get('/active', [AuthMiddleware, activeQuests]) // gets all active quests
 
 
@@ -112,6 +113,14 @@ async function validateQuest(req, res) {
         // returns user data with code 200 to client
         return res.send(user)
     }
+}
+
+async function pastQuests(req, res) {
+    let current_date =  Date.now()
+
+    let quests = await Quest.find({ endDate: { $lte: current_date } })
+
+    return res.send(quests)
 }
 
 async function activeQuests(req, res) {
