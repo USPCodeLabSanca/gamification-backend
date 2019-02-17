@@ -14,8 +14,8 @@ router.delete('/:quest_id', [AuthMiddleware, AdminAuthMiddleware, dropQuest]) //
 
 // special routes
 router.post('/validate', [AuthMiddleware, validateQuest]) // checks if quest password is valid
-router.get('/past', [AuthMiddleware, pastQuests]) // gets all inactive quests
-router.get('/active', [AuthMiddleware, activeQuests]) // gets all active quests
+router.get('/past',  pastQuests) // gets all inactive quests
+router.get('/active',  activeQuests) // gets all active quests
 
 
 // ==== CRUD ==== //
