@@ -135,7 +135,6 @@ async function forgotPassword(req, res) {
     let { email } = req.body;
 
     try {
-
         let user = await User.findOne({ email })
 
         if(!user)
@@ -171,12 +170,15 @@ async function forgotPassword(req, res) {
 }
 
 async function authResetToken(req, res) {
-    let { token } = req.body;
+    let { nusp, token } = req.body;
     try {
-        let user = await User.findOne({ passwordResetToken: token }).select('+passwordResetExpires')
+        let user = await User.findOne({ nusp: nusp }).select('+passwordResetToken passwordResetExpires')
         
         if(!user) 
-            return res.status(400).send({ error: 'Token not found.' })
+            return res.status(400).send({ error: 'User not found.' })
+
+        if(user.passwordResetToken !== token) 
+            return res.status(400).send({ error: 'Invalid token.' })
 
         let now = new Date();
         if(now > user.passwordResetExpires)
@@ -189,10 +191,10 @@ async function authResetToken(req, res) {
 }
 
 async function resetPassword(req, res) {
-    let { email, token, password } = req.body;
+    let { nusp, token, password } = req.body;
 
     try {
-        let user = await User.findOne({ email }).select('+passwordResetToken passwordResetExpires')
+        let user = await User.findOne({ nusp }).select('+passwordResetToken passwordResetExpires')
 
         if(!user)
             return res.status(400).send({ error: 'User not found.' })
