@@ -19,6 +19,7 @@ router.patch('/:nusp', [authMiddleware, adminMiddleware, patchUser])
 router.post('/register', registerUser)
 router.post('/auth', authUser)
 router.post('/forgot', forgotPassword)
+router.post('/resetoken', authResetToken)
 router.post('/reset', resetPassword)
 
 //routes that requires authentication
@@ -143,7 +144,7 @@ async function forgotPassword(req, res) {
         let token = crypto.randomBytes(3).toString('hex');
 
         const now = new Date();
-        now.setHours(now.getMinutes() + 15)
+        now.setMinutes(now.getMinutes() + 15)
 
         user.passwordResetToken = token
         user.passwordResetExpires = now
@@ -157,7 +158,7 @@ async function forgotPassword(req, res) {
             text: "Olá " + user.name + ", Seu token é " + token
         }, (err, info) => {
             if(err){
-                return res.status(400).send('Could not set email')
+                return res.status(400).send({error: 'Could not set email'})
             } else {
                 return res.send()
             }
@@ -167,6 +168,24 @@ async function forgotPassword(req, res) {
         return res.status(400).send({error: 'Error on forgot password.'})
     }
 
+}
+
+async function authResetToken(req, res) {
+    let { token } = req.body;
+    try {
+        let user = await User.findOne({ passwordResetToken: token }).select('+passwordResetExpires')
+        
+        if(!user) 
+            return res.status(400).send({ error: 'Token not found.' })
+
+        let now = new Date();
+        if(now > user.passwordResetExpires)
+            return res.status(400).send({ error: 'Token expired.'})
+
+        res.send()
+    } catch (e) {
+        res.status(400).send({ error: 'Could not validate token. Please try again' });
+    }
 }
 
 async function resetPassword(req, res) {
@@ -186,6 +205,8 @@ async function resetPassword(req, res) {
             return res.status(400).send({ error: 'Token expired.'})
 
         user.password = password
+        user.passwordResetExpires = undefined
+        user.passwordResetToken = undefined
 
         await user.save();
 
