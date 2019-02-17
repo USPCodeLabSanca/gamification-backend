@@ -75,6 +75,7 @@ async function dropQuest(req, res) {
 async function validateQuest(req, res) {
     let questId = req.body.questId
     let code = req.body.code;
+    code = code.trim().toLowerCase();
 
     // valida a missão
     let quest = await Quest.findOne({ questId }).select('+code')
