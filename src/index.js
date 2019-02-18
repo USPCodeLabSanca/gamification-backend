@@ -7,6 +7,7 @@
 import app from './app'
 var debug = require('debug')('gamification-backend:server');
 var http = require('http');
+// import https from 'https';
 
 /**
  * Get port from environment and store in Express.
@@ -18,7 +19,14 @@ app.set('port', port);
 /**
  * Create HTTP server.
  */
+// import fs from 'fs'
 
+// var options = {
+//   cert: fs.readFileSync('./privkey.pem'),
+//   key: fs.readFileSync('./fullchain.pem')
+// }
+
+// var server = https.createServer(options, app)
 var server = http.createServer(app);
 
 /**

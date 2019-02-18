@@ -37,7 +37,14 @@ async function createQuest(req, res) {
             return res.status(409).send({ error: 'Quest already exists (duplicate questId)'})
 
         //creates a new quest and stores it in database
-        quest = await Quest.create(req.body);
+        try{
+            quest = await Quest.create(req.body);
+        } catch (e) {
+            console.log(e)
+            console.log(req.body)
+            console.log("Error while creating quest")
+            return res.status(400).send({error: 'Registration Failed while saving quest'})
+        }
         return res.status(201).send(quest)
 
     } catch(err) {
@@ -107,6 +114,11 @@ async function validateQuest(req, res) {
         }
         if( quest.rewardPacks > 0){
             user.packs += quest.rewardPacks;
+        }
+
+        while( user.points > 100 ){
+            user.packs += 1
+            user.points -= 100
         }
 
         //saves changes

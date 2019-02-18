@@ -2,8 +2,12 @@ import mongoose from 'mongoose'
 mongoose.Promise = global.Promise;
 
 let mongo_uri = 'mongodb://localhost:27017/gamification'
-if(process.env.MONGO_URI)
+if(process.env.MONGO_URI){
     mongo_uri = 'mongodb://' + process.env.MONGO_URI + ':27017/gamification'
+    console.log('mongo uri set to ' + mongo_uri)
+} else {
+    console.log('mongo uri not set; using localhost as fallback')
+}
 
 try { mongoose.connect(mongo_uri, { useNewUrlParser: true })}
 catch(err) { mongoose.createConnection(mongo_uri, { useNewUrlParser: true })}
