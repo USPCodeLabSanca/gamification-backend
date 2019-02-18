@@ -23,6 +23,13 @@ router.get('/active',  activeQuests) // gets all active quests
 
 async function listQuests(req, res) {
     let quests = await Quest.find({})
+    
+    let i;
+    for(i = 0; i < quests.length; i++) {
+        quests[i].startDate.setHours( quests[i].startDate.getHours() - 3 )
+        quests[i].endDate.setHours( quests[i].endDate.getHours() - 3 )
+    }
+
     return res.send(quests)
 }
 
@@ -109,6 +116,12 @@ async function validateQuest(req, res) {
             user.packs += quest.rewardPacks;
         }
 
+
+        while(user.points >= 100){
+            user.points -= 100;
+            user.packs += 1;
+        }
+
         //saves changes
         await user.save()
         // returns user data with code 200 to client
@@ -117,19 +130,53 @@ async function validateQuest(req, res) {
 }
 
 async function pastQuests(req, res) {
-    let current_date =  Date.now()
+    let current_date = new Date();
+    current_date = current_date.setHours(current_date.getHours() - 3)
 
-    let quests = await Quest.find({ endDate: { $lte: current_date } })
+    let quests_return = [];
+    try {
+        let quests = await Quest.find(Quest.find({}))
 
-    return res.send(quests)
+        let i;
+        for(i = 0; i < quests.length; i++) {
+            quests[i].startDate.setHours( quests[i].startDate.getHours() - 3 )
+            quests[i].endDate.setHours( quests[i].endDate.getHours() - 3 )
+            if(quests[i].endDate <= current_date){
+                quests_return.push(quests[i])
+            }
+        }
+
+        return res.send(quests_return)
+    } catch (e) {
+        console.log(e)
+        return res.status(400).send({error: "failed to search quests"})
+    }
 }
 
 async function activeQuests(req, res) {
-    let current_date = Date.now();
+    let current_date = new Date(Date.now());
+    current_date = current_date.setHours(current_date.getHours() - 3)
 
-    let quests = await Quest.find({startDate: { $lte: current_date }, endDate: { $gte: current_date}})
+    let quests_return = []
 
-    return res.send(quests)
+    try {
+        let quests = await Quest.find(Quest.find({}))
+
+        let i;
+        for(i = 0; i < quests.length; i++) {
+            quests[i].startDate.setHours( quests[i].startDate.getHours() - 3 )
+            quests[i].endDate.setHours( quests[i].endDate.getHours() - 3 )
+            if(quests[i].startDate <= current_date && quests[i].endDate >= current_date){
+                quests_return.push(quests[i])
+            }
+        }
+
+        return res.send(quests_return)
+    } catch (e) {
+        console.log(e)
+        return res.status(400).send({error: "failed to search quests"})
+    }
+
 }
 
 
