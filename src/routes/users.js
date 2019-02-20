@@ -154,7 +154,7 @@ async function forgotPassword(req, res) {
             to: email,
             from: "Porcarata <bixoquest@gmail.com>",
             subject: "BixoQuest: Esqueci minha senha",
-            text: "Olá " + user.name + ", Seu token é " + token
+            text: "Olá " + user.name + ", Entre no link a seguir para resetar sua senha: https://bixoquest.icmc.usp.br/#/login/newpass?nusp=" + user.nusp + "&token=" + token
         }, (err, info) => {
             if(err){
                 return res.status(400).send({error: 'Could not set email'})
@@ -194,7 +194,7 @@ async function resetPassword(req, res) {
     let { nusp, token, password } = req.body;
 
     try {
-        let user = await User.findOne({ nusp }).select('+passwordResetToken passwordResetExpires')
+        let user = await User.findOne({ nusp: nusp }).select('+passwordResetToken passwordResetExpires')
 
         if(!user)
             return res.status(400).send({ error: 'User not found.' })

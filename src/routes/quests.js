@@ -26,8 +26,8 @@ async function listQuests(req, res) {
     
     let i;
     for(i = 0; i < quests.length; i++) {
-        quests[i].startDate.setHours( quests[i].startDate.getHours() - 3 )
-        quests[i].endDate.setHours( quests[i].endDate.getHours() - 3 )
+        quests[i].startDate.setHours( quests[i].startDate.getHours())
+        quests[i].endDate.setHours( quests[i].endDate.getHours())
     }
 
     return res.send(quests)
@@ -46,13 +46,15 @@ async function createQuest(req, res) {
         //creates a new quest and stores it in database
         try{
             quest = await Quest.create(req.body);
+            quest.code = quest.code.toLowerCase()
+            await quest.save
+            return res.status(201).send(quest)
         } catch (e) {
             console.log(e)
             console.log(req.body)
             console.log("Error while creating quest")
             return res.status(400).send({error: 'Registration Failed while saving quest'})
         }
-        return res.status(201).send(quest)
 
     } catch(err) {
         console.log(err)
@@ -95,21 +97,27 @@ async function validateQuest(req, res) {
     let quest = await Quest.findOne({ questId }).select('+code')
 
     if(!quest) {
+        console.log('Quest not found')
         return res.status(400).send({ error: 'Quest not found.' })
     }
 
-    if(quest.code != code)
+    if(quest.code != code){
+        console.log('Invalid code.')
+        console.log('Expected ' + quest.code + ', got ' + code)
         return res.status(400).send({ error: 'Invalid Code.' })
+    }
     else {
         // correct code!
         let user = await User.findById(req.userId);
 
         if(!user){
+            console.log('User not found.')
             return res.status(400).send({ error: 'User not found' })
         }
 
         // checks if user already completed this quest
         if (user.questsCompleted.includes(questId)){
+            console.log('Quest Already completed.')
             return res.status(400).send({ error: 'Quest already completed.' })
         }
 
@@ -124,8 +132,8 @@ async function validateQuest(req, res) {
         }
 
 
-        while(user.points >= 100){
-            user.points -= 100;
+        while(user.points >= 1200){
+            user.points -= 1200;
             user.packs += 1;
         }
 
@@ -138,7 +146,7 @@ async function validateQuest(req, res) {
 
 async function pastQuests(req, res) {
     let current_date = new Date();
-    current_date = current_date.setHours(current_date.getHours() - 3)
+    current_date = current_date.setHours(current_date.getHours())
 
     let quests_return = [];
     try {
@@ -146,8 +154,8 @@ async function pastQuests(req, res) {
 
         let i;
         for(i = 0; i < quests.length; i++) {
-            quests[i].startDate.setHours( quests[i].startDate.getHours() - 3 )
-            quests[i].endDate.setHours( quests[i].endDate.getHours() - 3 )
+            quests[i].startDate.setHours( quests[i].startDate.getHours() )
+            quests[i].endDate.setHours( quests[i].endDate.getHours() )
             if(quests[i].endDate <= current_date){
                 quests_return.push(quests[i])
             }
@@ -162,7 +170,7 @@ async function pastQuests(req, res) {
 
 async function activeQuests(req, res) {
     let current_date = new Date(Date.now());
-    current_date = current_date.setHours(current_date.getHours() - 3)
+    current_date = current_date.setHours(current_date.getHours())
 
     let quests_return = []
 
@@ -171,8 +179,8 @@ async function activeQuests(req, res) {
 
         let i;
         for(i = 0; i < quests.length; i++) {
-            quests[i].startDate.setHours( quests[i].startDate.getHours() - 3 )
-            quests[i].endDate.setHours( quests[i].endDate.getHours() - 3 )
+            quests[i].startDate.setHours( quests[i].startDate.getHours() )
+            quests[i].endDate.setHours( quests[i].endDate.getHours() )
             if(quests[i].startDate <= current_date && quests[i].endDate >= current_date){
                 quests_return.push(quests[i])
             }
