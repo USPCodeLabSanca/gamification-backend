@@ -26,8 +26,8 @@ async function listQuests(req, res) {
     
     let i;
     for(i = 0; i < quests.length; i++) {
-        quests[i].startDate.setHours( quests[i].startDate.getHours())
-        quests[i].endDate.setHours( quests[i].endDate.getHours())
+        quests[i].startDate.setHours( quests[i].startDate.getUTCHours())
+        quests[i].endDate.setHours( quests[i].endDate.getUTCHours())
     }
 
     return res.send(quests)
@@ -45,6 +45,10 @@ async function createQuest(req, res) {
 
         //creates a new quest and stores it in database
         try{
+            let endDate = new Date(req.body.endDate)
+            req.body.endDate = endDate.setHours(endDate.getHours() + 2)
+            let startDate = new Date(req.body.startDate)
+            req.body.startDate = startDate.setHours(startDate.getHours() + 2)
             quest = await Quest.create(req.body);
             quest.code = quest.code.toLowerCase()
             await quest.save
@@ -146,7 +150,7 @@ async function validateQuest(req, res) {
 
 async function pastQuests(req, res) {
     let current_date = new Date();
-    current_date = current_date.setHours(current_date.getHours())
+    current_date = current_date.setHours(current_date.getUTCHours())
 
     let quests_return = [];
     try {
@@ -154,8 +158,8 @@ async function pastQuests(req, res) {
 
         let i;
         for(i = 0; i < quests.length; i++) {
-            quests[i].startDate.setHours( quests[i].startDate.getHours() )
-            quests[i].endDate.setHours( quests[i].endDate.getHours() )
+            quests[i].startDate.setHours( quests[i].startDate.getUTCHours() )
+            quests[i].endDate.setHours( quests[i].endDate.getUTCHours() )
             if(quests[i].endDate <= current_date){
                 quests_return.push(quests[i])
             }
@@ -170,7 +174,7 @@ async function pastQuests(req, res) {
 
 async function activeQuests(req, res) {
     let current_date = new Date(Date.now());
-    current_date = current_date.setHours(current_date.getHours())
+    current_date = current_date.setHours(current_date.getUTCHours())
 
     let quests_return = []
 
@@ -179,8 +183,8 @@ async function activeQuests(req, res) {
 
         let i;
         for(i = 0; i < quests.length; i++) {
-            quests[i].startDate.setHours( quests[i].startDate.getHours() )
-            quests[i].endDate.setHours( quests[i].endDate.getHours() )
+            quests[i].startDate.setHours( quests[i].startDate.getUTCHours() )
+            quests[i].endDate.setHours( quests[i].endDate.getUTCHours() )
             if(quests[i].startDate <= current_date && quests[i].endDate >= current_date){
                 quests_return.push(quests[i])
             }
